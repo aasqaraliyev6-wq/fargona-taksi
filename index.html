@@ -29,11 +29,10 @@
         <div class="container">
             <div class="logo">🚗</div>
             <h1>Farg'ona-Shohimardon Taksi</h1>
-            <p>Farg'ona va Shohimardon o'rtasida tez va ishonchli taksi xizmati</p>
+            <p>Farg'ona, Shohimardon, Toshloq va Marg'ilon o'rtasida tez va ishonchli taksi xizmati</p>
             <div class="contact-number">📞 +998 33 835 11 87</div>
         </div>
     </header>
-
     <div class="container">
         <div class="booking-form">
             <div class="form-group">
@@ -42,28 +41,37 @@
                     <option value="">Tanlang</option>
                     <option value="Farg'ona">Farg'ona</option>
                     <option value="Shohimardon">Shohimardon</option>
+                    <option value="Toshloq">Toshloq</option>
+                    <option value="Marg'ilon">Marg'ilon</option>
                 </select>
             </div>
-            
+           
             <div class="form-group">
                 <label>Qayerga</label>
                 <select id="destination">
                     <option value="">Tanlang</option>
                     <option value="Farg'ona">Farg'ona</option>
                     <option value="Shohimardon">Shohimardon</option>
+                    <option value="Toshloq">Toshloq</option>
+                    <option value="Marg'ilon">Marg'ilon</option>
                 </select>
             </div>
-            
+           
             <div class="form-group">
                 <label>Necha kishi?</label>
                 <input type="number" id="passengers" placeholder="Sonini yozing (masalan: 3)" min="1" max="10" required>
             </div>
-            
+
+            <div class="form-group">
+                <label>Soat nechida ketish?</label>
+                <input type="time" id="departureTime" placeholder="Vaqtni tanlang (masalan: 14:30)" required>
+            </div>
+           
             <div class="form-group">
                 <label>Telefon Raqam</label>
                 <input type="tel" id="phone" placeholder="+998 XX XXX XX XX" required>
             </div>
-            
+           
             <div class="form-group">
                 <label>Lokatsiya</label>
                 <button type="button" class="location-btn" onclick="getLocation()">
@@ -73,24 +81,21 @@
                     Lokatsiya yuborilmadi
                 </div>
             </div>
-            
+           
             <button class="btn" onclick="sendOrder()">🚕 Buyurtma Yuborish</button>
-            
+           
             <div class="success" id="successMessage">
                 ✅ Buyurtmangiz qabul qilindi! Haydovchi tez orada bog'lanadi.
             </div>
         </div>
-
         <footer>
             <p class="contact-number">📞 +998 33 835 11 87</p>
             <p>⏰ 24/7 xizmat</p>
-            <p>© 2024 Farg'ona-Shohimardon Taksi</p>
+            <p>© 2026 Farg'ona-Shohimardon Taksi</p>
         </footer>
     </div>
-
     <script>
         let userLocation = null;
-
         function getLocation() {
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
@@ -114,47 +119,40 @@
                 document.getElementById('locationStatus').innerHTML = '❌ Brauzeringiz lokatsiyani qo\'llab-quvvatlamaydi';
             }
         }
-
         function sendOrder() {
             const pickup = document.getElementById('pickup').value;
             const destination = document.getElementById('destination').value;
             const passengers = document.getElementById('passengers').value;
+            const departureTime = document.getElementById('departureTime').value;
             const phone = document.getElementById('phone').value;
-
-            if(!pickup || !destination || !passengers || !phone) {
+            if(!pickup || !destination || !passengers || !departureTime || !phone) {
                 alert('❌ Iltimos, barcha maydonlarni to\'ldiring!');
                 return;
             }
-
             if(pickup === destination) {
                 alert('❌ Boshlanish va tugash nuqtalari bir xil bo\'lmasligi kerak!');
                 return;
             }
-
             if(!userLocation) {
                 alert('❌ Iltimos, avval lokatsiyangizni yuboring!');
                 return;
             }
-
-            // Telegram bot orqali yuborish
+            // Telegram bot orqali yuborish (guruhga tushadi)
             const botToken = '7834547756:AAFU2oAnmwVhlw43Mfodm6AKAdPD4t5DoK0';
             const chatId = '-1002503400045';
-            
+           
             const message = `🚕 YANGI BUYURTMA
-
 📍 Qayerdan: ${pickup}
 🎯 Qayerga: ${destination}
 👥 Yo'lovchilar: ${passengers} kishi
+🕒 Ketish vaqti: ${departureTime}
 📞 Telefon: ${phone}
-🌍 Lokatsiya: 
+🌍 Lokatsiya:
    - Kenglik: ${userLocation.latitude}
    - Uzunlik: ${userLocation.longitude}
    - Xarita: https://maps.google.com/?q=${userLocation.latitude},${userLocation.longitude}
-
-⏰ Vaqt: ${new Date().toLocaleString('uz-UZ')}
-
+⏰ Buyurtma vaqti: ${new Date().toLocaleString('uz-UZ')}
 💬 Narx va boshqa tafsilotlarni haydovchi bilan kelishib oling!`;
-
             fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
@@ -167,28 +165,28 @@
             .then(data => {
                 if(data.ok) {
                     document.getElementById('successMessage').style.display = 'block';
-                    
+                   
                     // Formani tozalash
                     document.getElementById('pickup').value = '';
                     document.getElementById('destination').value = '';
                     document.getElementById('passengers').value = '';
+                    document.getElementById('departureTime').value = '';
                     document.getElementById('phone').value = '';
                     document.getElementById('locationStatus').style.display = 'none';
                     userLocation = null;
-                    
+                   
                     setTimeout(() => {
                         document.getElementById('successMessage').style.display = 'none';
                     }, 5000);
                 } else {
-                    alert('✅ Buyurtma yuborildi! Haydovchi tez orada bog\'lanadi.');
+                    alert('❌ Buyurtma yuborishda xatolik: ' + data.description);
                 }
             })
             .catch(error => {
-                alert('✅ Buyurtma yuborildi! Haydovchi siz bilan bog\'lanadi.');
+                alert('❌ Internet aloqasi muammosi. Qaytadan urinib ko\'ring: ' + error.message);
             });
         }
-
-        // Avtomatik to'ldirish
+        // Avtomatik to'ldirish (faqat Farg'ona-Shohimardon uchun, boshqalari uchun qo'lda tanlang)
         document.getElementById('pickup').addEventListener('change', function() {
             if(this.value === 'Farg\'ona') {
                 document.getElementById('destination').value = 'Shohimardon';
@@ -196,7 +194,6 @@
                 document.getElementById('destination').value = 'Farg\'ona';
             }
         });
-
         document.getElementById('destination').addEventListener('change', function() {
             if(this.value === 'Farg\'ona') {
                 document.getElementById('pickup').value = 'Shohimardon';
