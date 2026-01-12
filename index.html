@@ -26,6 +26,7 @@
         .success { background: linear-gradient(135deg, #d4edda 0%, #a8e6cf 100%); color: #155724; padding: 15px; border-radius: 10px; margin: 15px 0; display: none; font-weight: 600; text-align: center; }
         .contact-number { font-size: 18px; font-weight: 700; color: white; margin: 10px 0; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); }
         h1 { font-weight: 700; font-size: 2rem; margin-bottom: 5px; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); }
+        .datetime-note { font-size: 14px; color: #666; margin-top: 5px; font-style: italic; }
     </style>
 </head>
 <body>
@@ -65,7 +66,7 @@
                     <option value="Qo'qon shahri">Qo'qon shahri</option>
                 </select>
             </div>
-          
+         
             <div class="form-group">
                 <label>Qayerga</label>
                 <select id="destination">
@@ -92,14 +93,15 @@
                     <option value="Qo'qon shahri">Qo'qon shahri</option>
                 </select>
             </div>
-          
+         
             <div class="form-group">
                 <label>Necha kishi?</label>
                 <input type="number" id="passengers" placeholder="Sonini yozing (masalan: 3)" min="1" max="10" required>
             </div>
             <div class="form-group">
-                <label>Soat nechida ketish?</label>
-                <input type="text" id="departureTime" placeholder="Soatni yozing (masalan: 14:30)" required>
+                <label>Ketish sanasi va vaqti</label>
+                <input type="datetime-local" id="departureTime" required>
+                <div class="datetime-note">Masalan: 2026-01-12T14:30 (sana va vaqtni tanlang, 24-soatlik formatda)</div>
             </div>
             <div class="form-group">
                 <label>Mashina turi</label>
@@ -109,12 +111,12 @@
                     <option value="Damas">Damas</option>
                 </select>
             </div>
-          
+         
             <div class="form-group">
                 <label>Telefon Raqam</label>
                 <input type="tel" id="phone" placeholder="+998 XX XXX XX XX" required>
             </div>
-          
+         
             <div class="form-group">
                 <label>Lokatsiya</label>
                 <button type="button" class="location-btn" onclick="getLocation()">
@@ -124,9 +126,9 @@
                     Lokatsiya yuborilmadi
                 </div>
             </div>
-          
+         
             <button class="btn" onclick="sendOrder()">🚕 Buyurtma Yuborish</button>
-          
+         
             <div class="success" id="successMessage">
                 ✅ Buyurtmangiz qabul qilindi! Haydovchi tez orada bog'lanadi.
             </div>
@@ -184,12 +186,35 @@
             // Telegram bot orqali yuborish (guruhga tushadi)
             const botToken = '7834547756:AAFU2oAnmwVhlw43Mfodm6AKAdPD4t5DoK0';
             const chatId = '-1002503400045';
-          
+         
+            // Datetime'ni o'zbekcha formatda ko'rsatish (sana oldin, keyin vaqt, 24-soatlik + ertalab/kechqurun)
+            const departureDateTime = new Date(departureTime);
+            const datePart = departureDateTime.toLocaleDateString('uz-UZ', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric'
+            });
+            const timePart = departureDateTime.toLocaleTimeString('uz-UZ', {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false  // 24-soatlik format
+            });
+            const hour = departureDateTime.getHours();
+            let period = '';
+            if (hour < 12) {
+                period = 'ertalab';
+            } else if (hour < 18) {
+                period = 'kunduzi';
+            } else {
+                period = 'kechqurun';
+            }
+            const formattedDateTime = `${datePart}, ${timePart} (${period})`;
+         
             const message = `🚕 YANGI BUYURTMA
 📍 Qayerdan: ${pickup}
 🎯 Qayerga: ${destination}
 👥 Yo'lovchilar: ${passengers} kishi
-🕒 Ketish vaqti: ${departureTime}
+🕒 Ketish sanasi va vaqti: ${formattedDateTime}
 🚗 Mashina turi: ${vehicleType}
 📞 Telefon: ${phone}
 🌍 Lokatsiya:
@@ -210,7 +235,7 @@
             .then(data => {
                 if(data.ok) {
                     document.getElementById('successMessage').style.display = 'block';
-                  
+                 
                     // Formani tozalash
                     document.getElementById('pickup').value = '';
                     document.getElementById('destination').value = '';
@@ -220,7 +245,7 @@
                     document.getElementById('phone').value = '';
                     document.getElementById('locationStatus').style.display = 'none';
                     userLocation = null;
-                  
+                 
                     setTimeout(() => {
                         document.getElementById('successMessage').style.display = 'none';
                     }, 5000);
