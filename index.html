@@ -99,9 +99,14 @@
                 <input type="number" id="passengers" placeholder="Sonini yozing (masalan: 3)" min="1" max="10" required>
             </div>
             <div class="form-group">
-                <label>Ketish sanasi va vaqti</label>
-                <input type="datetime-local" id="departureTime" required>
-                <div class="datetime-note">Masalan: 2026-01-12T14:30 (sana va vaqtni tanlang, 24-soatlik formatda)</div>
+                <label>Ketish sanasi</label>
+                <input type="date" id="departureDate" required>
+                <div class="datetime-note">Bugungi sanani tanlang yoki keyingi kunlarni (minimal bugun: 2026-01-12)</div>
+            </div>
+            <div class="form-group">
+                <label>Ketish vaqti</label>
+                <input type="time" id="departureTime" lang="sv" required>
+                <div class="datetime-note">24-soatlik format (masalan: 14:30 yoki 00:00 kechki uchun)</div>
             </div>
             <div class="form-group">
                 <label>Mashina turi</label>
@@ -140,6 +145,11 @@
         </footer>
     </div>
     <script>
+        // Bugungi sanani default qilish va min qo'yish
+        const today = new Date().toISOString().split('T')[0]; // 2026-01-12
+        document.getElementById('departureDate').value = today;
+        document.getElementById('departureDate').min = today;
+
         let userLocation = null;
         function getLocation() {
             if (navigator.geolocation) {
@@ -168,10 +178,11 @@
             const pickup = document.getElementById('pickup').value;
             const destination = document.getElementById('destination').value;
             const passengers = document.getElementById('passengers').value;
+            const departureDate = document.getElementById('departureDate').value;
             const departureTime = document.getElementById('departureTime').value;
             const vehicleType = document.getElementById('vehicleType').value;
             const phone = document.getElementById('phone').value;
-            if(!pickup || !destination || !passengers || !departureTime || !vehicleType || !phone) {
+            if(!pickup || !destination || !passengers || !departureDate || !departureTime || !vehicleType || !phone) {
                 alert('❌ Iltimos, barcha maydonlarni to\'ldiring!');
                 return;
             }
@@ -183,12 +194,14 @@
                 alert('❌ Iltimos, avval lokatsiyangizni yuboring!');
                 return;
             }
+            // Sana va vaqtni birlashtirish
+            const departureDateTimeStr = `${departureDate}T${departureTime}`;
+            const departureDateTime = new Date(departureDateTimeStr);
             // Telegram bot orqali yuborish (guruhga tushadi)
             const botToken = '7834547756:AAFU2oAnmwVhlw43Mfodm6AKAdPD4t5DoK0';
             const chatId = '-1002503400045';
          
             // Datetime'ni o'zbekcha formatda ko'rsatish (sana oldin, keyin vaqt, 24-soatlik + ertalab/kechqurun)
-            const departureDateTime = new Date(departureTime);
             const datePart = departureDateTime.toLocaleDateString('uz-UZ', {
                 day: 'numeric',
                 month: 'long',
@@ -240,6 +253,7 @@
                     document.getElementById('pickup').value = '';
                     document.getElementById('destination').value = '';
                     document.getElementById('passengers').value = '';
+                    document.getElementById('departureDate').value = today;
                     document.getElementById('departureTime').value = '';
                     document.getElementById('vehicleType').value = '';
                     document.getElementById('phone').value = '';
