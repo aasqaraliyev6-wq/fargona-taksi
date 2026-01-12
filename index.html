@@ -17,6 +17,8 @@
         .form-group label { display: block; margin-bottom: 10px; font-weight: 600; color: #2c3e50; font-size: 16px; text-transform: uppercase; letter-spacing: 1px; }
         select, input { width: 100%; padding: 12px 15px; border: 2px solid #ddd; border-radius: 10px; font-size: 16px; font-family: 'Poppins', sans-serif; transition: border-color 0.3s ease; }
         select:focus, input:focus { outline: none; border-color: #ff6b6b; box-shadow: 0 0 10px rgba(255, 107, 107, 0.2); }
+        .time-group { display: flex; gap: 10px; }
+        .time-group select { flex: 1; }
         .btn { background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%); color: white; padding: 15px; border: none; border-radius: 10px; width: 100%; cursor: pointer; font-size: 18px; font-weight: 600; margin-top: 10px; text-transform: uppercase; letter-spacing: 1px; transition: transform 0.3s ease; }
         .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(255, 107, 107, 0.3); }
         .location-btn { background: linear-gradient(135deg, #10ac84 0%, #0d8c6b 100%); color: white; border: none; padding: 15px; border-radius: 10px; width: 100%; cursor: pointer; font-size: 16px; font-weight: 600; margin-top: 10px; text-transform: uppercase; letter-spacing: 1px; transition: transform 0.3s ease; }
@@ -26,7 +28,6 @@
         .success { background: linear-gradient(135deg, #d4edda 0%, #a8e6cf 100%); color: #155724; padding: 15px; border-radius: 10px; margin: 15px 0; display: none; font-weight: 600; text-align: center; }
         .contact-number { font-size: 18px; font-weight: 700; color: white; margin: 10px 0; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); }
         h1 { font-weight: 700; font-size: 2rem; margin-bottom: 5px; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); }
-        .datetime-note { font-size: 14px; color: #666; margin-top: 5px; font-style: italic; }
     </style>
 </head>
 <body>
@@ -101,12 +102,53 @@
             <div class="form-group">
                 <label>Ketish sanasi</label>
                 <input type="date" id="departureDate" required>
-                <div class="datetime-note">Bugungi sanani tanlang yoki keyingi kunlarni (minimal bugun: 2026-01-12)</div>
             </div>
             <div class="form-group">
                 <label>Ketish vaqti</label>
-                <input type="time" id="departureTime" lang="sv" required>
-                <div class="datetime-note">24-soatlik format (masalan: 14:30 yoki 00:00 kechki uchun)</div>
+                <div class="time-group">
+                    <select id="hour" required>
+                        <option value="">Soat</option>
+                        <option value="00">00</option>
+                        <option value="01">01</option>
+                        <option value="02">02</option>
+                        <option value="03">03</option>
+                        <option value="04">04</option>
+                        <option value="05">05</option>
+                        <option value="06">06</option>
+                        <option value="07">07</option>
+                        <option value="08">08</option>
+                        <option value="09">09</option>
+                        <option value="10">10</option>
+                        <option value="11">11</option>
+                        <option value="12">12</option>
+                        <option value="13">13</option>
+                        <option value="14">14</option>
+                        <option value="15">15</option>
+                        <option value="16">16</option>
+                        <option value="17">17</option>
+                        <option value="18">18</option>
+                        <option value="19">19</option>
+                        <option value="20">20</option>
+                        <option value="21">21</option>
+                        <option value="22">22</option>
+                        <option value="23">23</option>
+                    </select>
+                    <select id="minute" required>
+                        <option value="">Daqiqa</option>
+                        <option value="0">00</option>
+                        <option value="5">05</option>
+                        <option value="10">10</option>
+                        <option value="15">15</option>
+                        <option value="20">20</option>
+                        <option value="25">25</option>
+                        <option value="30">30</option>
+                        <option value="35">35</option>
+                        <option value="40">40</option>
+                        <option value="45">45</option>
+                        <option value="50">50</option>
+                        <option value="55">55</option>
+                    </select>
+                </div>
             </div>
             <div class="form-group">
                 <label>Mashina turi</label>
@@ -146,7 +188,7 @@
     </div>
     <script>
         // Bugungi sanani default qilish va min qo'yish
-        const today = new Date().toISOString().split('T')[0]; // 2026-01-12
+        const today = new Date().toISOString().split('T')[0];
         document.getElementById('departureDate').value = today;
         document.getElementById('departureDate').min = today;
 
@@ -179,10 +221,11 @@
             const destination = document.getElementById('destination').value;
             const passengers = document.getElementById('passengers').value;
             const departureDate = document.getElementById('departureDate').value;
-            const departureTime = document.getElementById('departureTime').value;
+            const hour = document.getElementById('hour').value;
+            const minute = document.getElementById('minute').value.padStart(2, '0');
             const vehicleType = document.getElementById('vehicleType').value;
             const phone = document.getElementById('phone').value;
-            if(!pickup || !destination || !passengers || !departureDate || !departureTime || !vehicleType || !phone) {
+            if(!pickup || !destination || !passengers || !departureDate || !hour || !minute || !vehicleType || !phone) {
                 alert('❌ Iltimos, barcha maydonlarni to\'ldiring!');
                 return;
             }
@@ -194,34 +237,30 @@
                 alert('❌ Iltimos, avval lokatsiyangizni yuboring!');
                 return;
             }
-            // Sana va vaqtni birlashtirish
-            const departureDateTimeStr = `${departureDate}T${departureTime}`;
+            // Vaqtni 24-soatlik formatda birlashtirish
+            const timeStr = hour + ':' + minute;
+            const departureDateTimeStr = `${departureDate}T${timeStr}`;
             const departureDateTime = new Date(departureDateTimeStr);
-            // Telegram bot orqali yuborish (guruhga tushadi)
+            // Telegram bot orqali yuborish
             const botToken = '7834547756:AAFU2oAnmwVhlw43Mfodm6AKAdPD4t5DoK0';
             const chatId = '-1002503400045';
          
-            // Datetime'ni o'zbekcha formatda ko'rsatish (sana oldin, keyin vaqt, 24-soatlik + ertalab/kechqurun)
+            // Xabarda 24-soatlik format + davr
             const datePart = departureDateTime.toLocaleDateString('uz-UZ', {
                 day: 'numeric',
                 month: 'long',
                 year: 'numeric'
             });
-            const timePart = departureDateTime.toLocaleTimeString('uz-UZ', {
-                hour: '2-digit',
-                minute: '2-digit',
-                hour12: false  // 24-soatlik format
-            });
-            const hour = departureDateTime.getHours();
+            const hourNum = parseInt(hour);
             let period = '';
-            if (hour < 12) {
+            if (hourNum < 12) {
                 period = 'ertalab';
-            } else if (hour < 18) {
+            } else if (hourNum < 18) {
                 period = 'kunduzi';
             } else {
                 period = 'kechqurun';
             }
-            const formattedDateTime = `${datePart}, ${timePart} (${period})`;
+            const formattedDateTime = `${datePart}, ${timeStr} (${period})`;
          
             const message = `🚕 YANGI BUYURTMA
 📍 Qayerdan: ${pickup}
@@ -254,7 +293,8 @@
                     document.getElementById('destination').value = '';
                     document.getElementById('passengers').value = '';
                     document.getElementById('departureDate').value = today;
-                    document.getElementById('departureTime').value = '';
+                    document.getElementById('hour').value = '';
+                    document.getElementById('minute').value = '';
                     document.getElementById('vehicleType').value = '';
                     document.getElementById('phone').value = '';
                     document.getElementById('locationStatus').style.display = 'none';
@@ -271,7 +311,7 @@
                 alert('❌ Internet aloqasi muammosi. Qaytadan urinib ko\'ring: ' + error.message);
             });
         }
-        // Avtomatik to'ldirish (faqat Farg'ona shahri-Shohimardon uchun, boshqalari uchun qo'lda tanlang)
+        // Avtomatik to'ldirish
         document.getElementById('pickup').addEventListener('change', function() {
             if(this.value === 'Farg\'ona shahri') {
                 document.getElementById('destination').value = 'Shohimardon';
